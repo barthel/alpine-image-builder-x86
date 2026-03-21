@@ -49,14 +49,16 @@ if [ "${PUSH:-false}" = "true" ]; then
   PRE=""
   if [[ "${VERSION:-}" = *"rc"* ]]; then PRE="true"; fi
 
-  # Push builder image
-  docker tag "${IMAGE_NAME}" "${DIST_IMAGE}:${IMG_VERSION}"
-  docker push "${DIST_IMAGE}:${IMG_VERSION}"
+  # Push builder image (multi-arch: amd64 + arm64 for Apple Silicon / arm64 CI runners)
+  docker buildx build \
+    --platform linux/amd64,linux/arm64 \
+    --build-arg BASE_TAG="${BASE_TAG}" \
+    --tag "${DIST_IMAGE}:${IMG_VERSION}" \
+    --push .
 
   if [ -n "${VERSION}" ] && [ -z "${PRE}" ]; then
     for extra_tag in "${MINOR}" "${MAJOR}" latest stable; do
-      docker tag "${IMAGE_NAME}" "${DIST_IMAGE}:${extra_tag}"
-      docker push "${DIST_IMAGE}:${extra_tag}"
+      docker buildx imagetools create -t "${DIST_IMAGE}:${extra_tag}" "${DIST_IMAGE}:${IMG_VERSION}"
     done
   fi
 fi
