@@ -1,3 +1,5 @@
+ARG BASE_TAG=latest
+
 ### Stage 1: Debian for i386-efi GRUB modules
 # Alpine's grub package ships x86_64-efi modules only; i386-efi (needed for
 # 32-bit UEFI firmware on LattePanda v1 / Bay Trail / Cherry Trail) comes from Debian.
@@ -7,7 +9,6 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/*
 
 ### Stage 2: Alpine-based builder
-ARG BASE_TAG=latest
 FROM uwebarthel/alpine-image-builder:${BASE_TAG}
 
 # grub-efi and linux-lts are installed inside the target rootfs chroot;
