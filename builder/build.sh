@@ -45,9 +45,9 @@ fi
 mkdir -p "${WORK_PATH}"
 IMAGE_PATH="${WORK_PATH}/${IMAGE_NAME}"
 rm -f "${IMAGE_PATH}"
-# 1.5 GiB image: 256 MiB ESP + ~1.25 GiB root.
+# 1.75 GiB image: 256 MiB ESP + ~1.5 GiB root.
 # cloud-init growpart+resizefs expands the root partition to fill the disk on first boot.
-fallocate -l 1536M "${IMAGE_PATH}"
+fallocate -l 1792M "${IMAGE_PATH}"
 
 # Partition: GPT, ESP=FAT32 (256 MiB), root=ext4 (rest)
 parted -s "${IMAGE_PATH}" \
