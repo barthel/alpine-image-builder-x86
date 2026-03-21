@@ -16,9 +16,12 @@ DOCKER_USER="${DOCKER_USER:-uwebarthel}"
 IMAGE_NAME="alpine-image-builder-x86"
 DIST_IMAGE="${DOCKER_USER}/${IMAGE_NAME}"
 
+# shellcheck disable=SC1091
+source ./versions.config   # provides ALPINE_VERSION (e.g. 3.21.0)
+
 if [ -n "${VERSION}" ]; then
-  BASE_TAG="${VERSION%.*}"       # major.minor, e.g. 3.21 from 3.21.0
-  ALPINE_OS_VERSION="${VERSION}"
+  BASE_TAG="${ALPINE_VERSION%.*}"       # major.minor from Alpine version, e.g. 3.21
+  ALPINE_OS_VERSION="${ALPINE_VERSION}" # rootfs tag from versions.config, not release tag
 else
   BASE_TAG="latest"
   ALPINE_OS_VERSION="stable"
