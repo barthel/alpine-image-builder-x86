@@ -1,0 +1,26 @@
+#cloud-config
+# vim: syntax=yaml
+#
+# Default cloud-init user-data for AlpineOS x86.
+# Customise before first boot; will only run once (per cloud-init instance-id).
+
+hostname: alpine-x86
+manage_etc_hosts: true
+
+ssh_pwauth: true
+
+users:
+  - name: admin
+    gecos: "Instance Administrator"
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    groups: [wheel, docker, video]
+    lock_passwd: false
+    # Add your SSH public key here:
+    # ssh_authorized_keys:
+    #   - ssh-ed25519 AAAA...
+
+package_upgrade: false
+
+runcmd:
+  - rc-service avahi-daemon restart || true

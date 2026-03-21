@@ -1,0 +1,92 @@
+version: 2.1
+
+workflows:
+  version: 2.1
+  build_and_deploy:
+    jobs:
+      - build:
+          filters:
+            tags:
+              only: /.*/
+          context:
+            - "Docker Hub"
+            - "github"
+
+jobs:
+  build:
+    machine:
+      image: ubuntu-2404:current
+    steps:
+      - checkout
+
+      - run:
+          name: Run Docker login
+          command: |
+            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+
+      - run:
+          name: Run Shellcheck
+          command: |
+            docker build --build-arg BASE_TAG=latest -t alpine-image-builder-x86 .
+            docker run --rm alpine-image-builder-x86 \
+              bash -c 'shellcheck /builder/build.sh /builder/chroot-script.sh'
+
+      - run:
+          name: Create disk image and push builder to Docker Hub
+          command: |
+            VERSION="${CIRCLE_TAG}" PUSH=true ./build.sh
+          no_output_timeout: 1800
+
+      - run:
+          name: Collect artifacts
+          command: |
+            mkdir -p output
+            for f in alpineos-x86*.zip; do
+              [ -f "${f}" ] && sha256sum "${f}" > "${f}.sha256"
+            done
+            mv alpineos-x86*.zip alpineos-x86*.zip.sha256 output/ 2>/dev/null || true
+            # Stable names for GitHub releases /latest/download/ support
+            if [ -n "${CIRCLE_TAG}" ]; then
+              cp "output/alpineos-x86-${CIRCLE_TAG}.img.zip" output/alpineos-x86.img.zip
+              sha256sum output/alpineos-x86.img.zip > output/alpineos-x86.img.zip.sha256
+            fi
+
+      - run:
+          name: Deploy GitHub Release
+          command: |
+            if [ -n "${CIRCLE_TAG}" ]; then
+              PRE=false
+              [[ ${CIRCLE_TAG} = *"rc"* ]] && PRE=true
+              API="https://api.github.com/repos/${GITHUB_USER}/alpine-image-builder-x86"
+              # Delete existing release if present
+              RELEASE_ID=$(curl -sf -H "Authorization: token ${GITHUB_TOKEN}" \
+                "${API}/releases/tags/${CIRCLE_TAG}" \
+                | python3 -c "import sys,json; print(json.load(sys.stdin).get('id',''))" 2>/dev/null || true)
+              if [ -n "${RELEASE_ID}" ]; then
+                curl -sf -X DELETE -H "Authorization: token ${GITHUB_TOKEN}" \
+                  "${API}/releases/${RELEASE_ID}" || true
+              fi
+              # Create release
+              RESPONSE=$(curl -sf -X POST \
+                -H "Authorization: token ${GITHUB_TOKEN}" \
+                -H "Content-Type: application/json" \
+                -d "{\"tag_name\":\"${CIRCLE_TAG}\",\"name\":\"${CIRCLE_TAG}\",\"prerelease\":${PRE}}" \
+                "${API}/releases")
+              UPLOAD_URL=$(echo "${RESPONSE}" \
+                | python3 -c "import sys,json; print(json.load(sys.stdin)['upload_url'])" \
+                | sed 's/{?name,label}//')
+              # Upload stable zip + sha256 (for /latest/download/ support)
+              curl -sf -X POST \
+                -H "Authorization: token ${GITHUB_TOKEN}" \
+                -H "Content-Type: application/zip" \
+                --data-binary @output/alpineos-x86.img.zip \
+                "${UPLOAD_URL}?name=alpineos-x86.img.zip"
+              curl -sf -X POST \
+                -H "Authorization: token ${GITHUB_TOKEN}" \
+                -H "Content-Type: text/plain" \
+                --data-binary @output/alpineos-x86.img.zip.sha256 \
+                "${UPLOAD_URL}?name=alpineos-x86.img.zip.sha256"
+            fi
+
+      - store_artifacts:
+          path: /home/circleci/project/output
