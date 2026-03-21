@@ -20,7 +20,7 @@ DIST_IMAGE="${DOCKER_USER}/${IMAGE_NAME}"
 source ./versions.config   # provides ALPINE_VERSION (e.g. 3.21.0)
 
 if [ -n "${VERSION}" ]; then
-  BASE_TAG="${ALPINE_VERSION%.*}"       # major.minor from Alpine version, e.g. 3.21
+  BASE_TAG="${VERSION%.*}"              # major.minor from release tag, e.g. 3.21
   ALPINE_OS_VERSION="${ALPINE_VERSION}" # rootfs tag from versions.config, not release tag
 else
   BASE_TAG="latest"
