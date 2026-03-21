@@ -57,14 +57,24 @@ ln -sf /boot/efi/network-config /var/lib/cloud/seed/nocloud-net/network-config
 
 ### GRUB EFI installation
 #
-# --target=x86_64-efi: produce an EFI application
+# --target=x86_64-efi / i386-efi: EFI application for 64-bit and 32-bit UEFI firmware
 # --efi-directory=/boot/efi: the mounted ESP
-# --removable: write to EFI/BOOT/BOOTX64.EFI (default boot path for removable media / USB)
+# --removable: write to EFI/BOOT/BOOTX64.EFI / BOOTIA32.EFI (removable media path)
 # --no-nvram: skip UEFI NVRAM writes (not accessible from chroot)
 # grub.cfg is written by builder/build.sh after the chroot exits (needs ROOT_PARTUUID).
+#
+# Both files share the same grub/grub.cfg on the ESP.
+# BOOTX64.EFI: standard x86_64 UEFI (LattePanda Alpha/Delta, most PCs)
+# BOOTIA32.EFI: 32-bit UEFI firmware (LattePanda v1 / Bay Trail / Cherry Trail)
 
 grub-install \
   --target=x86_64-efi \
+  --efi-directory=/boot/efi \
+  --removable \
+  --no-nvram
+
+grub-install \
+  --target=i386-efi \
   --efi-directory=/boot/efi \
   --removable \
   --no-nvram

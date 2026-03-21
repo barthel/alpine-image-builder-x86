@@ -91,6 +91,12 @@ cp /etc/resolv.conf "${BUILD_PATH}/etc/resolv.conf"
 # Copy builder file overlays
 cp -R /builder/files/etc "${BUILD_PATH}/"
 
+# Copy i386-efi GRUB modules into chroot.
+# Alpine's grub package provides only x86_64-efi; i386-efi modules come from Debian
+# via the multi-stage Dockerfile. chroot-script.sh calls grub-install for both targets.
+mkdir -p "${BUILD_PATH}/usr/lib/grub"
+cp -r /usr/lib/grub/i386-efi "${BUILD_PATH}/usr/lib/grub/"
+
 # Mount pseudo filesystems
 mkdir -p "${BUILD_PATH}"/{proc,sys,dev/pts}
 mount -o bind /dev     "${BUILD_PATH}/dev"
