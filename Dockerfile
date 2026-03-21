@@ -3,7 +3,7 @@ ARG BASE_TAG=latest
 ### Stage 1: Debian for i386-efi GRUB modules
 # Alpine's grub package ships x86_64-efi modules only; i386-efi (needed for
 # 32-bit UEFI firmware on LattePanda v1 / Bay Trail / Cherry Trail) comes from Debian.
-FROM debian:bookworm-slim AS grub-ia32
+FROM --platform=linux/amd64 debian:bookworm-slim AS grub-ia32
 RUN apt-get update \
  && apt-get install -y --no-install-recommends grub-efi-ia32-bin \
  && rm -rf /var/lib/apt/lists/*
