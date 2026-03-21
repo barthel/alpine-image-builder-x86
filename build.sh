@@ -49,6 +49,11 @@ if [ "${PUSH:-false}" = "true" ]; then
   PRE=""
   if [[ "${VERSION:-}" = *"rc"* ]]; then PRE="true"; fi
 
+  # Ensure a multi-arch buildx builder is available (default docker driver does not support it)
+  docker buildx inspect multi-arch-builder >/dev/null 2>&1 \
+    || docker buildx create --name multi-arch-builder --bootstrap
+  docker buildx use multi-arch-builder
+
   # Push builder image (multi-arch: amd64 + arm64 for Apple Silicon / arm64 CI runners)
   docker buildx build \
     --platform linux/amd64,linux/arm64 \
