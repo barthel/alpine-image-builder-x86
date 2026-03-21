@@ -45,8 +45,9 @@ fi
 mkdir -p "${WORK_PATH}"
 IMAGE_PATH="${WORK_PATH}/${IMAGE_NAME}"
 rm -f "${IMAGE_PATH}"
-# Sparse 2 GiB image: 256 MiB ESP + ~1.75 GiB root
-fallocate -l 2G "${IMAGE_PATH}"
+# 1.5 GiB image: 256 MiB ESP + ~1.25 GiB root.
+# cloud-init growpart+resizefs expands the root partition to fill the disk on first boot.
+fallocate -l 1536M "${IMAGE_PATH}"
 
 # Partition: GPT, ESP=FAT32 (256 MiB), root=ext4 (rest)
 parted -s "${IMAGE_PATH}" \
@@ -157,6 +158,11 @@ EOF
 ### Unmount root partition and release loop device
 
 umount "${BUILD_PATH}"
+
+# Zero out free ext4 blocks so that zip compression is effective.
+# Must run after umount (filesystem must be unmounted).
+zerofree "${ROOT_PART}"
+
 kpartx -d "${LOOP_DEV}"
 losetup -d "${LOOP_DEV}"
 
@@ -164,7 +170,7 @@ losetup -d "${LOOP_DEV}"
 
 umask 0000
 cd "${WORK_PATH}"
-zip "${IMAGE_NAME}.zip" "${IMAGE_NAME}"
+zip -9 "${IMAGE_NAME}.zip" "${IMAGE_NAME}"
 sha256sum "${IMAGE_NAME}.zip" > "${IMAGE_NAME}.zip.sha256"
 rm "${IMAGE_NAME}"
 cp "${IMAGE_NAME}.zip"        "${BUILD_RESULT_PATH}/"
