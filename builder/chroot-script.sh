@@ -13,6 +13,16 @@ EOF
 
 apk update
 
+### initramfs features (must be set before the kernel package generates initramfs)
+# The base rootfs (alpine-os-rootfs) is container-focused and ships without a
+# hardware-boot mkinitfs.conf. Set the features explicitly so that the initramfs
+# includes ext4, USB storage, SCSI, NVMe and other hardware drivers needed to
+# find and mount the root partition on real hardware.
+
+mkdir -p /etc/mkinitfs
+printf 'features="ata base cdrom ext4 keymap kms mmc nvme raid scsi usb virtio"\n' \
+  > /etc/mkinitfs/mkinitfs.conf
+
 ### Kernel
 
 apk add --no-cache linux-lts

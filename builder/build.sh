@@ -140,7 +140,7 @@ insmod part_gpt
 insmod ext2
 
 search --no-floppy --label --set=root root
-linux /vmlinuz-lts root=PARTUUID=${ROOT_PARTUUID} rootfstype=ext4 fsck.repair=yes rootwait quiet
+linux /vmlinuz-lts root=LABEL=root rootfstype=ext4 fsck.repair=yes rootwait quiet
 initrd /initramfs-lts
 EOF
 
