@@ -144,7 +144,7 @@ set gfxmode=800x600
 set gfxpayload=keep
 
 search --no-floppy --label --set=root root
-linux /vmlinuz-lts root=LABEL=root rootfstype=ext4 fsck.repair=yes rootwait
+linux /vmlinuz-lts root=LABEL=root rootfstype=ext4 modules=ext4 fsck.repair=yes rootwait nomodeset
 initrd /initramfs-lts
 EOF
 
