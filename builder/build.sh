@@ -145,7 +145,7 @@ set gfxmode=640x480
 set gfxpayload=keep
 
 search --no-floppy --label --set=root root
-linux /boot/vmlinuz-lts root=LABEL=root rootfstype=ext4 modules=ext4 fsck.repair=yes rootwait fbcon=font:SUN12x22 net.ifnames=0 biosdevname=0
+linux /boot/vmlinuz-lts root=LABEL=root rootfstype=ext4 modules=ext4 fsck.repair=yes rootwait nomodeset net.ifnames=0 biosdevname=0
 initrd /boot/initramfs-lts
 boot
 EOF
