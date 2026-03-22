@@ -67,6 +67,12 @@ apk add --no-cache \
   e2fsprogs \
   e2fsprogs-extra
 
+### WiFi
+
+apk add --no-cache \
+  wpa_supplicant \
+  wpa_supplicant-openrc
+
 ### Enable OpenRC services
 
 # sysfs, cgroups: added to runlevels by build.sh (from the build host, after
