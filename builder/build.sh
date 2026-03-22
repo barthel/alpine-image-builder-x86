@@ -138,9 +138,13 @@ set timeout=3
 insmod gzio
 insmod part_gpt
 insmod ext2
+insmod all_video
+
+set gfxmode=800x600
+set gfxpayload=keep
 
 search --no-floppy --label --set=root root
-linux /vmlinuz-lts root=LABEL=root rootfstype=ext4 fsck.repair=yes rootwait quiet
+linux /vmlinuz-lts root=LABEL=root rootfstype=ext4 fsck.repair=yes rootwait
 initrd /initramfs-lts
 EOF
 
