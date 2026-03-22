@@ -136,9 +136,6 @@ ln -sf /etc/init.d/cgroups "${BUILD_PATH}/etc/runlevels/sysinit/cgroups"
 # was ineffective: GRUB never consulted that file.
 mkdir -p "${BUILD_PATH}/boot/grub"
 cat > "${BUILD_PATH}/boot/grub/grub.cfg" << EOF
-set default=0
-set timeout=3
-
 insmod gzio
 insmod part_gpt
 insmod ext2
@@ -148,8 +145,9 @@ set gfxmode=800x600
 set gfxpayload=keep
 
 search --no-floppy --label --set=root root
-linux /vmlinuz-lts root=LABEL=root rootfstype=ext4 modules=ext4 fsck.repair=yes rootwait nomodeset
-initrd /initramfs-lts
+linux /boot/vmlinuz-lts root=LABEL=root rootfstype=ext4 modules=ext4 fsck.repair=yes rootwait nomodeset
+initrd /boot/initramfs-lts
+boot
 EOF
 
 ### Copy cloud-init seed files to ESP (readable on Mac/Linux via FAT32)
