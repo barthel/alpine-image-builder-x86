@@ -27,6 +27,13 @@ printf 'features="ata base cdrom ext4 keymap kms mmc nvme raid scsi usb virtio"\
 
 apk add --no-cache linux-lts
 
+### Regenerate initramfs with hardware-boot features
+# apk's post-install trigger may run mkinitfs before our conf takes full effect
+# (no /proc inside chroot). Calling mkinitfs explicitly ensures ext4, usb, scsi
+# etc. are included regardless of trigger ordering.
+KVER=$(ls /lib/modules/ | head -n 1)
+mkinitfs -c /etc/mkinitfs/mkinitfs.conf "${KVER}"
+
 ### GRUB EFI bootloader
 
 apk add --no-cache grub grub-efi
