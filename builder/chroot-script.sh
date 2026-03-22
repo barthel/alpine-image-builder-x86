@@ -28,12 +28,12 @@ printf 'features="ata base cdrom ext4 keymap kms mmc nvme raid scsi usb virtio"\
 apk add --no-cache linux-lts
 
 ### Regenerate initramfs with hardware-boot features
-# apk's post-install trigger may run mkinitfs before our conf takes full effect
-# (no /proc inside chroot). Calling mkinitfs explicitly ensures ext4, usb, scsi
-# etc. are included regardless of trigger ordering.
+# apk's trigger writes /boot/initramfs-<fullversion> but GRUB loads
+# /initramfs-lts → /boot/initramfs-lts.  Use -o to overwrite exactly
+# that file so GRUB picks up the ext4/usb/scsi-enabled initramfs.
 KVER=$(find /lib/modules -mindepth 1 -maxdepth 1 -type d | head -n 1)
 KVER="${KVER##*/}"
-mkinitfs -c /etc/mkinitfs/mkinitfs.conf "${KVER}"
+mkinitfs -c /etc/mkinitfs/mkinitfs.conf -o /boot/initramfs-lts "${KVER}"
 
 ### GRUB EFI bootloader
 
