@@ -35,6 +35,15 @@ KVER=$(find /lib/modules -mindepth 1 -maxdepth 1 -type d | head -n 1)
 KVER="${KVER##*/}"
 mkinitfs -c /etc/mkinitfs/mkinitfs.conf -o /boot/initramfs-lts "${KVER}"
 
+# Fail-fast: verify that ext4 module is actually present in the initramfs.
+# If this step fails, the build is broken — do not produce a broken image.
+_ext4_check=$(gzip -dc /boot/initramfs-lts | cpio -t 2>/dev/null | grep ext4 || true)
+if [ -z "${_ext4_check}" ]; then
+  echo "ERROR: ext4 module not found in /boot/initramfs-lts!" >&2
+  exit 1
+fi
+echo "initramfs check OK: ext4 present"
+
 ### GRUB EFI bootloader
 
 apk add --no-cache grub grub-efi
