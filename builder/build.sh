@@ -129,9 +129,13 @@ ln -sf /etc/init.d/sysfs   "${BUILD_PATH}/etc/runlevels/sysinit/sysfs"
 ln -sf /etc/init.d/cgroups "${BUILD_PATH}/etc/runlevels/sysinit/cgroups"
 
 ### Write GRUB config (needs ROOT_PARTUUID resolved here on build host)
-# GRUB looks for grub.cfg relative to its own location in the ESP.
-mkdir -p "${BUILD_PATH}/boot/efi/grub"
-cat > "${BUILD_PATH}/boot/efi/grub/grub.cfg" << EOF
+# grub-install (without --boot-directory) places modules and config in
+# /boot/grub/ on the ROOT partition — that is what GRUB actually reads at
+# boot.  The EFI stub only bootstraps; it searches for /boot/grub/grub.cfg
+# to find its real config.  Writing only to the ESP (/boot/efi/grub/grub.cfg)
+# was ineffective: GRUB never consulted that file.
+mkdir -p "${BUILD_PATH}/boot/grub"
+cat > "${BUILD_PATH}/boot/grub/grub.cfg" << EOF
 set default=0
 set timeout=3
 
