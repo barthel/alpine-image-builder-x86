@@ -141,7 +141,7 @@ insmod part_gpt
 insmod ext2
 insmod all_video
 
-set gfxmode=640x480
+set gfxmode=480x320,640x480,auto
 set gfxpayload=keep
 
 search --no-floppy --label --set=root root
